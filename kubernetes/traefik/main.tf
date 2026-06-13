@@ -45,7 +45,8 @@ resource "helm_release" "traefik" {
     additionalArguments = [
       "--certificatesresolvers.letsencrypt.acme.email=${var.letsencrypt_email}",
       "--certificatesresolvers.letsencrypt.acme.storage=/data/acme.json",
-      "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web",
+      # TLS-ALPN-01 over :443 (websecure) — no HTTP token handler needed.
+      "--certificatesresolvers.letsencrypt.acme.tlschallenge=true",
     ]
   })]
 }
