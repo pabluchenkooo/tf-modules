@@ -1,6 +1,7 @@
 # Traefik v3 via Helm, with an HTTP-01 Let's Encrypt cert resolver named
-# "letsencrypt". IngressRoutes reference it via tls.certResolver = "letsencrypt".
-# acme.json is persisted on a small PVC; an init container fixes its permissions.
+# "letsencrypt". IngressRoutes / Ingresses reference it via the certresolver.
+# acme.json is persisted on a small PVC; fsGroup makes it writable by the
+# non-root traefik user (uid/gid 65532).
 
 resource "helm_release" "traefik" {
   name             = "traefik"
@@ -21,40 +22,25 @@ resource "helm_release" "traefik" {
       kubernetesCRD     = { enabled = true }
     }
 
-    # Redirect all HTTP to HTTPS.
-    ports = {
-      web = {
-        redirectTo = {
-          port     = "websecure"
-          priority = 10
-        }
-      }
+    # Single replica required for the file-based ACME store.
+    deployment = {
+      replicas = 1
     }
 
     # Persist acme.json across restarts.
     persistence = {
-      enabled     = true
-      name        = "data"
-      accessMode  = "ReadWriteOnce"
-      size        = "128Mi"
-      path        = "/data"
+      enabled    = true
+      name       = "data"
+      accessMode = "ReadWriteOnce"
+      size       = "128Mi"
+      path       = "/data"
     }
 
-    deployment = {
-      initContainers = [
-        {
-          name    = "volume-permissions"
-          image   = "busybox:1.36"
-          command = ["sh", "-c", "touch /data/acme.json && chmod 600 /data/acme.json"]
-          volumeMounts = [
-            { name = "data", mountPath = "/data" }
-          ]
-        }
-      ]
+    # Make the ACME store writable by the non-root traefik user.
+    podSecurityContext = {
+      fsGroup             = 65532
+      fsGroupChangePolicy = "OnRootMismatch"
     }
-
-    # A single replica is required for the file-based ACME store.
-    deploymentReplicas = 1
 
     additionalArguments = [
       "--certificatesresolvers.letsencrypt.acme.email=${var.letsencrypt_email}",
