@@ -15,6 +15,12 @@ resource "helm_release" "traefik" {
       general = { level = var.log_level }
     }
 
+    # Watch both standard Ingress objects and Traefik's own IngressRoute CRD.
+    providers = {
+      kubernetesIngress = { enabled = true }
+      kubernetesCRD     = { enabled = true }
+    }
+
     # Redirect all HTTP to HTTPS.
     ports = {
       web = {
