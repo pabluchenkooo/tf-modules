@@ -26,3 +26,4 @@ The `//` separates the repo from the module subdirectory. Tags version the whole
 ## Releases
 
 - `v0.1.0` — `gcp/vpc`, `gcp/gke`
+- `v0.2.0` — adds `gcp/cloud-sql`
