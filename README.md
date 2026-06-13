@@ -28,3 +28,4 @@ The `//` separates the repo from the module subdirectory. Tags version the whole
 - `v0.1.0` — `gcp/vpc`, `gcp/gke`
 - `v0.2.0` — adds `gcp/cloud-sql`
 - `v0.2.1` — `cloud-sql`: pin `edition` (default ENTERPRISE) so `db-custom-*` tiers work
+- `v0.3.0` — adds `gcp/artifact-registry`, `gcp/gcs-bucket`
